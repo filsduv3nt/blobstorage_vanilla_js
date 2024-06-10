@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save Files to Blob Storage</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1>Save Files to Blob Storage</h1>
+        <div class="form-group">
+            <input type="file" id="fileInput" class="form-control" multiple onchange="updateFileTable()">
+        </div>
+        <div class="form-group">
+            <input type="text" id="sasToken" class="form-control" placeholder="Enter SAS token here..." value="">
+        </div>
+        <div class="form-group">
+            <input type="text" id="containerName" class="form-control" placeholder="Enter container name here..." value="">
+        </div>
+        <button class="btn btn-primary" onclick="saveFiles()">Save</button>
+
+        <table class="table table-striped" id="fileTable">
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { BlobServiceClient } from "https://cdn.jsdelivr.net/npm/@azure/storage-blob@12.23.0/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/logger@1.1.2/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/core-lro@2.7.2/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/core-xml@1.4.2/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/core-auth@1.7.2/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/core-util@1.9.0/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/core-paging@1.6.2/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/core-tracing@1.1.2/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/abort-controller@2.1.2/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/core-http-compat@2.1.2/+esm";
+        import "https://cdn.jsdelivr.net/npm/@azure/core-rest-pipeline@1.16.0/+esm";
+        import "https://cdn.jsdelivr.net/npm/tslib@2.6.3/+esm";
+
+        function updateFileTable() {
+            const fileInput = document.getElementById('fileInput');
+            const fileTableBody = document.getElementById('fileTable').getElementsByTagName('tbody')[0];
+            fileTableBody.innerHTML = '';
+
+            for (const file of fileInput.files) {
+                const row = fileTableBody.insertRow();
+                const cell = row.insertCell(0);
+                cell.textContent = file.name;
+            }
+        }
+
+        async function saveFiles() {
+            const fileInput = document.getElementById('fileInput');
+            const sasToken = document.getElementById('sasToken').value;
+            const containerName = document.getElementById('containerName').value;
+
+            if (!sasToken) {
+                alert('Please enter a SAS token');
+                return;
+            }
+
+            if (fileInput.files.length === 0) {
+                alert('Please select files');
+                return;
+            }
+
+            const blobServiceClient = new BlobServiceClient(sasToken);
+            const containerClient = blobServiceClient.getContainerClient(containerName);
+
+            for (const file of fileInput.files) {
+                const blobName = file.name; // Utilizzare il nome del file selezionato come nome del blob
+                const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+                
+                try {
+                    await blockBlobClient.uploadData(file);
+                    console.log(`File ${blobName} uploaded successfully!`);
+                } catch (error) {
+                    console.error(`Error uploading file ${blobName}:`, error);
+                }
+            }
+
+            alert('All files uploaded successfully!');
+        }
+
+        window.updateFileTable = updateFileTable;
+        window.saveFiles = saveFiles;
+    </script>
+</body>
+</html>
