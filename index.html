@@ -67,7 +67,7 @@
         import "https://cdn.jsdelivr.net/npm/@azure/core-rest-pipeline@1.16.0/+esm";
         import "https://cdn.jsdelivr.net/npm/tslib@2.6.3/+esm";
 
-        const UPLOAD_BLOCK_SIZE = 4 * 1024 * 1024; // 1MB block size
+        const UPLOAD_BLOCK_SIZE = 1 * 1024 * 1024; // 1MB block size
 
         function updateFileTable() {
             const fileInput = document.getElementById('fileInput');
@@ -82,9 +82,7 @@
                 const cellProgress = row.insertCell(1);
                 const progressBar = document.createElement('div');
                 progressBar.className = 'progress';
-                progressBar.innerHTML = `
-                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                `;
+                progressBar.innerHTML = `<div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>`;
                 cellProgress.appendChild(progressBar);
             }
         }
